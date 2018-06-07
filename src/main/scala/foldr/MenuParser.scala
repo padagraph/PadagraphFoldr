@@ -24,18 +24,34 @@ object MenuParser {
   }
 
   case class Link(label: String, url: String, options: Map[String,String]) extends MenuEntry {
+
+    var tabId: Option[String] = None
+
     override def render(router: Router, idx: String): (Element, List[Element]) = {
-      val a = JsDom.all.a(cls := "link item",
+
+      val reloadButton =
+        //button(cls := "ui small icon button",
+          i(cls:= "refresh icon").render
+        //).render
+      val a = JsDom.all.a(cls := "inverted link item",
         attr("data-tab") := s"tab-$idx",
-        label, i(cls := "ui icon help")
+        reloadButton,
+        label
       ).render
       router.registerTab(a, label, s"tab-$idx")
+
+      val iframeElement = iframe(src := convertedURL, style := "width: 100%; height: 100%;").render
       val tab = div(
         cls := "frame ui bottom attached tab normal size",
         style := "height: 100%",
         attr("data-tab") := s"tab-$idx",
-        iframe(src := convertedURL, style := "width: 100%; height: 100%;")
+        iframeElement
       ).render
+
+
+      reloadButton.onclick = _ => {iframeElement.src = "" ; iframeElement.src =  convertedURL}
+
+      tabId = Some(s"tab-$idx")
       (a,List(tab))
     }
 
@@ -59,18 +75,18 @@ object MenuParser {
       val tabs = content.map(_._2).flatten
 
       val icon = i(cls:= s"icon folder ${if(expand) "open" else "closed"}").render
-      val title = div(cls:= "title",
+      val title = div(cls:= "inverted title",
         icon,
         label
       ).render
 
       title.onclick = (ev) => {
-          global.$(icon).toggleClass("open");
+          global.$(icon).toggleClass("open")
         }
 
-      val menu = div(cls:= "ui accordion",
+      val menu = div(cls:= "ui inverted accordion",
         title,
-        div(cls:= s"ui content menu ${if(expand) "active" else  ""}",
+        div(cls:= s"ui inverted content menu ${if(expand) "active" else  ""}",
           menuItems
         )
       ).render
@@ -95,7 +111,7 @@ object MenuParser {
       case Array("ethercalc", calc, tab@_*) => Some(EtherCalc(calc, tab))
       case Array("calc", calc, tab@_*) => Some(Calc(calc, tab))
       case Array("url", url) => Some(URL(url))
-      case _ => None
+      case Array(tab@_*) => Some(EtherCalc(tab(0),tab.drop(1)))
     }
   }
 
@@ -128,17 +144,28 @@ object MenuParser {
     }.flatten.reverse
   }
 
+
+  def getFirstLink(entries: List[MenuEntry]): Option[Link] = {
+    entries match {
+      case Nil => None
+      case (e:Link) :: _ => Some(e)
+      case Directory(_,_,subEntries) :: tl => getFirstLink(subEntries).orElse(getFirstLink(tl))
+      case _ :: tl => getFirstLink(tl)
+    }
+  }
+
   def createHTML(router: Router, mainDiv: html.Div, menuDiv: html.Div, entries: List[MenuEntry]): Unit = {
     import scalatags.JsDom.all._
     menuDiv.classList.add(Styles.sidebar.name)
 
     val elements = entries.zipWithIndex.map {case (item, i) => item.render(router, i.toString) }
     val menuItems = elements.map(_._1)
-    val tabs = elements.map(_._2).flatten
+    val tabs = elements.flatMap(_._2)
 
-    menuDiv.appendChild(
-      div(cls := "ui fluid vertical menu", menuItems).render
-    )
+    for(item <- menuItems) {
+      menuDiv.appendChild(item)
+        //div(cls := "ui fluid vertical menu", menuItems).render
+    }
     tabs.foreach(mainDiv.appendChild)
     mainDiv.render
 

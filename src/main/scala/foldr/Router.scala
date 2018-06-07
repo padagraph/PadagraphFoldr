@@ -15,8 +15,8 @@ class Router(service: Service, menuDivId: String , entries: List[MenuEntry]) {
     menuItem.onclick = (e) => dom.window.history.pushState(id, "", service.buildTabURL(label))
   }
 
-  def selectTab(path: String): Unit = {
-    println(path)
+  def selectPath(path: String): Unit = {
+    println(s"selecting $path")
     println(mapping(path))
     mapping.get(path).orElse(Some("tab-0")).foreach(changeTab)
   }

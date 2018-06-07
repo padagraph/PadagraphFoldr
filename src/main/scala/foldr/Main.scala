@@ -34,7 +34,12 @@ object Main {
         .map(entries => {
           val router = new Router(s, "menu", entries)
           MenuParser.createHTML(router, mainDiv, menuDiv, entries)
-          router.selectTab(s.initialPath())
+          s.initialPath() match {
+            case "" =>
+              println("initial vide")
+              for(e <- MenuParser.getFirstLink(entries); id <- e.tabId) router.changeTab(id)
+            case p => router.selectPath(p)
+          }
         })
     }
   }

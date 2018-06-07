@@ -26,7 +26,7 @@ package object foldr {
   }
 
   case class Calc(calc: String, tab: Seq[String]) extends Service {
-    override def buildMenuURL(): String = s"https://calc.padagraph.io/$calc.csv"
+    override def buildMenuURL(): String = s"http://calc.padagraph.io/$calc.csv"
 
     override def buildTabURL(path: String): String = s"/calc/$calc/$path"
 
