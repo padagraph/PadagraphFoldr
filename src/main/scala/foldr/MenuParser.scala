@@ -189,6 +189,7 @@ object MenuParser {
 
     val $ = global.$
     menuItems.foreach {item => $(item).tab(js.Dictionary("context" -> $("#menu .menu"), "childrenOnly" -> false))}
+  //  $("a.link.item").tab(js.Dictionary("context" -> $("#menu .menu")))
     //$("a.link.item").tab(js.Dictionary("context" -> $("#menu .menu")))
     $(".ui.accordion").accordion()
 
