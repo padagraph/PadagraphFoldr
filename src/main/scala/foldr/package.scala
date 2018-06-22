@@ -10,7 +10,7 @@ package object foldr {
   case class Github(user: String, repo: String, tab: Seq[String]) extends Service {
     override def buildMenuURL(): String = s"https://raw.githubusercontent.com/$user/$repo/master/menu.csv"
 
-    override def buildTabURL(path: String): String = s"/github/$user/$repo/$path"
+    override def buildTabURL(path: String): String = s"/$path"
 
     override def initialPath(): String = {
       tab.mkString("/")
