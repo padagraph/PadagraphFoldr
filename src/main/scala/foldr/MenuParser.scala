@@ -120,13 +120,7 @@ object MenuParser {
   def parseURL(): Option[Service] = {
     val fields = dom.document.location.pathname.substring(1).split("/")
 
-    fields.map(scalajs.js.URIUtils.decodeURIComponent) match {
-      case Array("github", user, repo, tab@_*) => Some(Github(user, repo, tab))
-      case Array("ethercalc", calc, tab@_*) => Some(EtherCalc(calc, tab))
-      case Array("calc", calc, tab@_*) => Some(Calc(calc, tab))
-      case Array("url", url) => Some(URL(url))
-      case Array(tab@_*) => Some(EtherCalc(tab(0),tab.drop(1)))
-    }
+    Some(Github("a-tsioh","hackfoldr-2.0-pperso",fields.map(scalajs.js.URIUtils.decodeURIComponent)))
   }
 
   def getMenu(service: Service): Future[dom.XMLHttpRequest] = {
