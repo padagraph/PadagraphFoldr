@@ -4,6 +4,7 @@ import org.scalajs.dom
 import org.scalajs.dom.html
 
 import scalatags.JsDom.all._
+import scala.scalajs.js.Dynamic.global
 
 
 @JSExport
@@ -39,6 +40,16 @@ object Main {
               println("initial vide")
               for(e <- MenuParser.getFirstLink(entries); id <- e.tabId) router.changeTab(id)
             case p => router.selectPath(p)
+          }
+
+          dom.document.getElementById("edit-menu-content").appendChild(
+            iframe(
+              src:=s.editURL(),
+              style:= "width:100% ; height:100% ; display: block"
+            ).render
+          )
+          dom.document.getElementById("edit-menu").asInstanceOf[html.Anchor].onclick = (ev) => {
+            global.$(".modal").modal("show")
           }
         })
     }

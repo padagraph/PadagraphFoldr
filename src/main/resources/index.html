@@ -15,13 +15,29 @@
 <!--div class="ui equal height grid bottom attached" style="height: 100%;">
     <div id="menu" class="four wide column container"></div>
     <div id="main" class="twelve wide streched column bottom attached container"></div-->
-    <div class="ui vertical inverted menu fixed left sidebar visible" id="menu"></div>
-    <div class="ui pusher bottom attached" id="main"></div>
+    <div class="ui fullscreen longer modal" style="height:80%">
+        <div class="content" style="height:100%" id="edit-menu-content">
+        </div>
+    </div>
+    <div class="ui inverted fixed vertical right sidebar menu scale down" id="config">
+        <a class="item" id="edit-menu">
+            <i class="home icon"></i>
+            Edit menu
+        </a>
+        <a class="item">
+            <i class="block layout icon"></i>
+            Reload menu
+        </a>
+    </div>
+<div class="pusher" style="display:flex; height:100%">
+            <div class="ui left vertical inverted visible sidebar menu" id="menu"></div>
+            <div class="pusher" style="width: calc(100% - 260px);height:100%" id="tabs-zone"></div>
+</div>
 <!--/div-->
 <script type="text/javascript" src="/padagraphfoldr-jsdeps.min.js"></script>
 <script type="text/javascript" src="/padagraphfoldr-opt.js"></script>
 <script>
-foldr.Main().test(document.getElementById("menu"), document.getElementById("main"))
+foldr.Main().test(document.getElementById("menu"), document.getElementById("tabs-zone"))
 </script>
 </body>
 </html>

@@ -299,3 +299,7 @@ a, a:link {
 
 #sidebar .ui.accordion > .content {
   padding: 0; }
+
+.ui.fullscreen.modal {
+    height: 90%;
+}

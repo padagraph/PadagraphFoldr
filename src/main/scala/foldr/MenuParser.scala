@@ -19,6 +19,8 @@ object MenuParser {
 
   private val graphDataMapping = collection.mutable.HashMap.empty[String, String]
 
+  private val errorLog = collection.mutable.ArrayBuffer.empty[String]
+
   abstract sealed class MenuEntry {
     def render(router: Router, idx: String): (Element, List[Element])
   }
@@ -46,12 +48,19 @@ object MenuParser {
         tagDiv,
         label
       ).render
+
       router.registerTab(a, label, s"tab-$idx")
 
-      val iframeElement = iframe(src := convertedURL, style := "width: 100%; height: 100%;").render
+      val iframeElement =
+        iframe(
+          src := convertedURL,
+          style:="display: block; height: 100% ; width: 100%"
+        ).render
       val tab = div(
-        cls := "frame ui bottom attached tab normal size",
-        style := "height: 100%",
+        cls := "ui tab",
+        //style := "display: flex ; position: absolute ; height:100%",
+        style := "height: 100% ; width: 100%",
+        //style := "top: 0 ; bottom: 0",
         attr("data-tab") := s"tab-$idx",
         iframeElement
       ).render
@@ -66,8 +75,13 @@ object MenuParser {
     private val convertedURL: String = {
       if(url.startsWith("PDG")) {
         val gid = url.substring(4)
-        val opts = options.map(o => o._1 + "=" + o._2).mkString("&")
-        s"http://botapad.padagraph.io/import/igraph.html?s=${graphDataMapping(gid)}&nofoot=1&gid=$gid&$opts"
+        graphDataMapping.get(gid) match {
+          case Some(link) =>
+            val opts = options.map(o => o._1 + "=" + o._2).mkString("&")
+            s"http://botapad.padagraph.io/import/igraph.html?s=$link&nofoot=1&gid=$gid&$opts"
+          case None => errorLog.append(s"PDG graph id $gid not found")
+            s"http://www.perdu.com"
+        }
       }
       else url
     }
@@ -110,7 +124,13 @@ object MenuParser {
 
   case class Title(label:String, options: Map[String, String]) extends MenuEntry {
     override def render(router: Router, idx: String): (Element, List[Element]) = {
-      (div(cls := "ui item", label).render, Nil)
+      val configButton = i(cls:="edit outline icon").render
+      configButton.onclick =(ev) => {
+        val $ = global.$
+       // $("#config").sidebar(js.Dynamic.literal(transition="scale down"))
+        $("#config").sidebar("toggle")
+      }
+      (div(cls := "ui icon item", configButton , label).render, Nil)
     }
   }
 
@@ -194,9 +214,11 @@ object MenuParser {
     mainDiv.render
 
     val $ = global.$
-    menuItems.foreach {item => $(item).tab(js.Dictionary("context" -> $("#menu .menu"), "childrenOnly" -> false))}
+    //menuItems.foreach {item => $(item).tab(js.Dictionary("context" -> $("#menu .menu"), "childrenOnly" -> false))}
+    menuItems.foreach {item => println($(item)); $(item).tab()}
     //$("a.link.item").tab(js.Dictionary("context" -> $("#menu .menu")))
     $(".ui.accordion").accordion()
+    $("#config").sidebar("setting", "transition", "scale down");
 
 
 
