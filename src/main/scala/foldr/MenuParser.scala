@@ -72,7 +72,7 @@ object MenuParser {
       (a,List(tab))
     }
 
-    private val convertedURL: String = {
+    private lazy val convertedURL: String = {
       if(url.startsWith("PDG")) {
         val gid = url.substring(4)
         graphDataMapping.get(gid) match {
