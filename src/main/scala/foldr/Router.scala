@@ -1,28 +1,34 @@
 package foldr
 
-import foldr.MenuParser.MenuEntry
+import foldr.MenuParser.{Link, MenuEntry}
 import org.scalajs.dom
 
 import scala.scalajs.js.Dynamic.global
 
 class Router(service: Service, menuDivId: String , entries: List[MenuEntry]) {
 
-  private val mapping = scala.collection.mutable.HashMap.empty[String, String]
+  private val labelMapping = scala.collection.mutable.HashMap.empty[String, String]
+  private val menuEntryMapping = scala.collection.mutable.HashMap.empty[String, Link]
   private val $ = global.$
 
-  def registerTab(menuItem: dom.html.Anchor, label: String, id: String): Unit = {
-    mapping(label) = id
-    menuItem.onclick = (e) => dom.window.history.pushState(id, "", service.buildTabURL(label))
+  def registerTab(menuItem: Link, label: String, id: String): Unit = {
+    labelMapping(label) = id
+    menuEntryMapping(id) = menuItem
+    menuItem.a.onclick = (e) =>{
+      dom.window.history.pushState(id, "", service.buildTabURL(label))
+      if(!menuItem.isLoaded) menuItem.loadIFrame()
+    }
   }
 
   def selectPath(path: String): Unit = {
-    println(s"selecting $path")
-    println(mapping(path))
-    mapping.get(path).orElse(Some("tab-0")).foreach(changeTab)
+    labelMapping.get(path).orElse(Some("tab-0")).foreach(changeTab)
   }
 
   def changeTab(tabID: String): Unit = {
     println(s"selecting $tabID")
+    menuEntryMapping.get(tabID).foreach { me =>
+      if(!me.isLoaded) me.loadIFrame()
+    }
     $(s"#$menuDivId a").tab("change tab", tabID)
   }
 

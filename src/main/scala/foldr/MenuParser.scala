@@ -2,7 +2,7 @@ package foldr
 
 import org.scalajs.dom
 import org.scalajs.dom.ext.Ajax
-import org.scalajs.dom.html
+import org.scalajs.dom.{Event, html}
 import org.scalajs.dom.html.Element
 
 import scala.concurrent.Future
@@ -28,6 +28,19 @@ object MenuParser {
   case class Link(label: String, url: String, options: Map[String,String], tag: String) extends MenuEntry {
 
     var tabId: Option[String] = None
+    private var loaded: Boolean = false
+    def isLoaded: Boolean = loaded
+
+
+    private val tab = div(
+      cls := "ui tab",
+      style := "height: 100% ; width: 100%").render
+
+    val iframeElement = iframe(style:="display: block; height: 100% ; width: 100%").render
+    val loader = div(cls:="ui active text loader", "loading").render
+    val a = JsDom.all.a(cls := "inverted link item",label).render
+
+
 
     override def render(router: Router, idx: String): (Element, List[Element]) = {
 
@@ -42,34 +55,38 @@ object MenuParser {
         //button(cls := "ui small icon button",
           i(cls:= "refresh icon").render
         //).render
-      val a = JsDom.all.a(cls := "inverted link item",
-        attr("data-tab") := s"tab-$idx",
-        reloadButton,
-        tagDiv,
-        label
-      ).render
 
-      router.registerTab(a, label, s"tab-$idx")
+      a.setAttribute("data-tab", s"tab-$idx")
+      a.appendChild(reloadButton)
+      a.appendChild(tagDiv.render)
 
-      val iframeElement =
-        iframe(
-          src := convertedURL,
-          style:="display: block; height: 100% ; width: 100%"
-        ).render
-      val tab = div(
-        cls := "ui tab",
-        //style := "display: flex ; position: absolute ; height:100%",
-        style := "height: 100% ; width: 100%",
-        //style := "top: 0 ; bottom: 0",
-        attr("data-tab") := s"tab-$idx",
-        iframeElement
-      ).render
+      router.registerTab(this, label, s"tab-$idx")
 
+//      val iframeElement =
+//        iframe(
+//          src := convertedURL,
+//          style:="display: block; height: 100% ; width: 100%"
+//        ).render
+      tab.setAttribute("data-tab",s"tab-$idx")
+      tab.appendChild(loader)
+      tab.appendChild(iframeElement)
 
-      reloadButton.onclick = _ => {iframeElement.src = "" ; iframeElement.src =  convertedURL}
+      reloadButton.onclick = _ => {loadIFrame()}
 
       tabId = Some(s"tab-$idx")
       (a,List(tab))
+    }
+
+    def loadIFrame(): Unit = {
+      loader.setAttribute("class", "ui active large text loader")
+      // util.Try(tab.removeChild(iframeElement))
+      iframeElement.src = ""
+      println(s"loading $label")
+      iframeElement.onload = (ev) => {
+        loader.setAttribute("class", "ui large text loader")
+      }
+      loaded = true
+      iframeElement.src = convertedURL
     }
 
     private lazy val convertedURL: String = {
